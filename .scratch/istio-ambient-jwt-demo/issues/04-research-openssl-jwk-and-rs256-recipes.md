@@ -1,0 +1,27 @@
+# 04: Research: pure-bash RS256 minting and PEM→JWK recipes for the scripts
+
+Type: research
+Status: resolved
+Blocked by:
+
+## Question
+
+`scripts/gen-keys.sh` must emit an RSA key pair **and** the public JWK JSON (`kty`, `kid`, `n`, `e`, `alg`, `use`) to paste into `RequestAuthentication.jwks`. `scripts/mint-jwt.sh` must mint RS256 JWTs (valid / expired / forged-with-other-key) using only `openssl`, `base64`, `jq`, and POSIX shell on macOS (the local `openssl` is Homebrew OpenSSL 3; note any differences from LibreSSL `/usr/bin/openssl`).
+
+1. Produce and **locally test** (openssl and jq are installed on this machine) a recipe for extracting `n` and `e` from a PEM public key as base64url without padding, handling the leading `00` byte on the modulus. Prefer `openssl rsa -pubin -modulus` or `openssl asn1parse`; avoid Python/Node dependencies.
+2. Produce and locally test an RS256 signing recipe: header `{"alg":"RS256","kid":"portal-key-1","typ":"JWT"}`, payload with `iss`/`aud`/`sub`/`tenant_id`/`roles`/`iat`/`exp`, `openssl dgst -sha256 -sign`, base64url. Verify the token round-trips by checking the signature with `openssl dgst -verify` and, if feasible, by decoding at a well-known JWT verifier's documented algorithm (cite RFC 7515/7518 for base64url and RS256 specifics).
+3. Confirm the JWK fields Istio's `RequestAuthentication` inline `jwks` needs (does it require `alg`? `use`? does `kid` in the JWT header have to match?). Cite istio.io / Envoy jwt_authn docs.
+4. Confirm how Spring Security's resource server consumes a raw public key (`spring.security.oauth2.resourceserver.jwt.public-key-location` with a PEM `-----BEGIN PUBLIC KEY-----` file) and how `NimbusJwtEncoder` is constructed from an RSA key pair (`RSAKey` + `ImmutableJWKSet`), for **Spring Boot 4.x / Spring Security 7** (decided in ticket 05; note differences from 3.x only where they affect this code). Cite Spring docs.
+
+Save the tested shell snippets in `research/openssl-jwk-and-rs256-recipes.md` with citations; keep scratch files out of the repo. Then append the summary under `## Answer` in this file and set `Status: resolved`. Do **not** edit `map.md`.
+
+## Answer
+
+Full note with tested snippets, test output and citations: `research/openssl-jwk-and-rs256-recipes.md`.
+
+1. **PEM → JWK.** `openssl rsa -pubin -noout -modulus` prints the modulus as a hex magnitude with no DER `00` sign byte, so `n = base64url(xxd -r -p <hex>)` is directly RFC 7518 Base64urlUInt (proved: `n` decodes to exactly 256 bytes for RSA-2048, first byte `c8`, matching `Modulus=C80B...`). `e` comes from `rsa -pubin -text` (`Exponent: 65537`) → minimal big-endian bytes → `AQAB`. `b64url() { base64 | tr -d '\n=' | tr '+/' '-_'; }`. Output is byte-identical with OpenSSL 3.6.4 and LibreSSL 3.3.6 (`/usr/bin/openssl`), including a LibreSSL-only `genpkey`/`pkey -pubout` run.
+2. **RS256 minting.** `printf '%s.%s' "$H" "$P" | openssl dgst -sha256 -sign key.pem -binary | b64url` (RS256 = RSASSA-PKCS1-v1_5/SHA-256, RFC 7518 §3.3; signing input per RFC 7515 §5.1). Header/payload built with `jq -cn`, newline stripped. Verified: `openssl dgst -sha256 -verify` says `Verified OK` for valid and expired tokens, `Verification failure` (exit 1) for the token signed with `other.key`; header/payload decode back with jq to the exact spec claims; Nimbus JOSE 10.9.1 (`JWKSet.parse` + `RSASSAVerifier`) agrees on all four tokens. Works on both openssl builds.
+3. **Istio inline `jwks`.** `alg` and `use` are OPTIONAL (RFC 7517 §4.2/4.4); Envoy's jwt_authn ignores `use` entirely and compares `alg` only if the JWK has one. `kid` is compared only when **both** JWT header and JWK carry it; mismatch → 401 `Jwks doesn't have key to match kid or alg from Jwt`. Minimum JWK is `{"kty":"RSA","n":..,"e":..}`; emit `{"keys":[{"kty":"RSA","use":"sig","alg":"RS256","kid":"portal-key-1","n":..,"e":"AQAB"}]}`. Istiod puts inline `jwks` into `local_jwks.inline_string` (no fetch). `requestPrincipals` = `<iss>/<sub>` = `https://portal.internal/alice`. Envoy allows 60 s clock skew on `exp`, so mint the expired demo token with `-120`, not `-60`.
+4. **Spring Boot 4 / Security 7.** Starter is now `spring-boot-starter-security-oauth2-resource-server` (old name deprecated in 4.0.x). `spring.security.oauth2.resourceserver.jwt.public-key-location` accepts only SPKI `-----BEGIN PUBLIC KEY-----` PEM (Boot strips that header/footer and uses `X509EncodedKeySpec`) → `NimbusJwtDecoder.withPublicKey(key).signatureAlgorithm(RS256)`; set `audiences: internal-services` to get an `aud` validator, do not set `issuer-uri`. `NimbusJwtEncoder` is still built as `new NimbusJwtEncoder(new ImmutableJWKSet<>(new JWKSet(new RSAKey.Builder(pub).privateKey(priv).keyID("portal-key-1").build())))`; 7.0 adds `NimbusJwtEncoder.withKeyPair(pub, priv).jwkPostProcessor(b -> b.keyID("portal-key-1")).build()`. **Pitfall:** the 7.0 builder defaults `kid` to the key thumbprint, and the encoder copies the JWK kid into the JWS header, so without an explicit `keyID("portal-key-1")` the waypoint rejects every token with the kid-mismatch 401. Other 7.x changes (`typ` validator on by default, 30 s remote timeouts, Jackson 3) do not affect this code.
+
+Gotchas for the implementer: never `echo` into `openssl dgst` (trailing newline breaks the signature); no `base64 -w0` on macOS (keep `tr -d '\n'` for Linux portability); only PKCS#8 `BEGIN PRIVATE KEY` / SPKI `BEGIN PUBLIC KEY` files, not `BEGIN RSA ...`.
