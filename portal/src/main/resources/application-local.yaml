@@ -1,0 +1,6 @@
+portal:
+  jwt:
+    private-key: file:../keys/portal.key
+    public-key: file:../keys/portal.pub
+  downstream:
+    service-a-url: http://localhost:8081

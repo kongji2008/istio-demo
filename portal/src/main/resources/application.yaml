@@ -1,0 +1,11 @@
+server:
+  port: 8080
+
+portal:
+  jwt:
+    # Signing Key mounted from Secret portal-signing-key; never inline key material
+    private-key: file:/etc/portal-keys/private.pem
+    public-key: file:/etc/portal-keys/public.pem
+  downstream:
+    # plain HTTP to the K8s DNS name; ztunnel adds mTLS, the waypoint checks the Internal JWT
+    service-a-url: http://service-a.svc-a-ns.svc.cluster.local:8080

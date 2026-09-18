@@ -1,0 +1,15 @@
+server:
+  port: 8080
+
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # SPKI PEM only; PKCS#1 "BEGIN RSA PUBLIC KEY" will not parse
+          public-key-location: file:/etc/portal-keys/public.pem
+          # adds the aud validator; issuer-uri must NOT be set (Boot would attempt OIDC discovery). iss is enforced by the waypoint.
+          audiences: internal-services
+          # roles: ["USER"] -> ROLE_USER with no code
+          authorities-claim-name: roles
+          authority-prefix: ROLE_

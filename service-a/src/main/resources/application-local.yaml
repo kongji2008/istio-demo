@@ -1,0 +1,11 @@
+server:
+  port: 8081
+service-a:
+  downstream:
+    service-b-url: http://localhost:8082
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          public-key-location: file:../keys/portal.pub
