@@ -1,0 +1,46 @@
+# Ingress Gateway in its own non-ambient namespace (ADR-0002). Istio creates Deployment/Service/SA "demo-gateway-istio".
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: demo-gateway
+  namespace: istio-ingress
+  annotations:
+    # kind has no LoadBalancer; NodePort + the kind extraPortMapping (30080 -> host 8080) serves the browser demo
+    networking.istio.io/service-type: NodePort
+spec:
+  gatewayClassName: istio
+  listeners:
+    - name: http
+      port: 80
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: All
+---
+# Same-name Service pre-created so Istio's server-side apply merges onto it and the nodePort stays pinned to 30080.
+apiVersion: v1
+kind: Service
+metadata:
+  name: demo-gateway-istio
+  namespace: istio-ingress
+spec:
+  type: NodePort
+  ports:
+    - name: http
+      port: 80
+      protocol: TCP
+      nodePort: 30080
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: portal
+  namespace: portal-ns
+spec:
+  parentRefs:
+    - name: demo-gateway
+      namespace: istio-ingress
+  rules:
+    - backendRefs:
+        - name: portal
+          port: 8080

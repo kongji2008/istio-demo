@@ -1,0 +1,88 @@
+# Per-hop allows. Ground truth is the per-hop identity table in BUILD-BRIEF.md §2 / research 03.
+# L4 fields on a selector/no-targetRefs policy are evaluated by ztunnel; L7 fields there fail safe to DENY, hence targetRefs for anything L7.
+# The waypoint does not impersonate the caller, so the destination ztunnel sees the waypoint's SA, not portal-sa / svc-a-sa.
+
+# gateway -> portal pod (ztunnel L4)
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-gw-to-portal
+  namespace: portal-ns
+spec:
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            principals: ["cluster.local/ns/istio-ingress/sa/demo-gateway-istio"]
+---
+# svc-a waypoint -> service-a pod (ztunnel L4). Do NOT list portal-sa here: ztunnel never sees it once the waypoint is in the path,
+# and leaving it out is what makes the waypoint mandatory.
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-waypoint-to-a
+  namespace: svc-a-ns
+spec:
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            principals: ["cluster.local/ns/svc-a-ns/sa/waypoint"]
+---
+# portal -> service-a, evaluated by the svc-a waypoint (L7): Service Identity + Request Principal + method/path
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-portal-to-a
+  namespace: svc-a-ns
+spec:
+  targetRefs:
+    - group: ""
+      kind: Service
+      name: service-a
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            principals: ["cluster.local/ns/portal-ns/sa/portal-sa"]
+            # <iss>/<sub> of a JWT verified by RequestAuthentication; any Portal-minted user
+            requestPrincipals: ["https://portal.internal/*"]
+      to:
+        - operation:
+            methods: ["GET"]
+            paths: ["/hello"]
+---
+# svc-b waypoint -> service-b pod (ztunnel L4)
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-waypoint-to-b
+  namespace: svc-b-ns
+spec:
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            principals: ["cluster.local/ns/svc-b-ns/sa/waypoint"]
+---
+# service-a -> service-b, evaluated by the svc-b waypoint (L7)
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-a-to-b
+  namespace: svc-b-ns
+spec:
+  targetRefs:
+    - group: ""
+      kind: Service
+      name: service-b
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            principals: ["cluster.local/ns/svc-a-ns/sa/svc-a-sa"]
+            requestPrincipals: ["https://portal.internal/*"]
+      to:
+        - operation:
+            methods: ["GET"]
+            paths: ["/hello"]

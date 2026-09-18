@@ -1,0 +1,29 @@
+# Verbatim `istioctl waypoint generate --for service` output. The waypoint's ServiceAccount is named after the Gateway,
+# so "waypoint" is the SA the L4 allow policies depend on (cluster.local/ns/<ns>/sa/waypoint).
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  labels:
+    istio.io/waypoint-for: service
+  name: waypoint
+  namespace: svc-a-ns
+spec:
+  gatewayClassName: istio-waypoint
+  listeners:
+  - name: mesh
+    port: 15008
+    protocol: HBONE
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  labels:
+    istio.io/waypoint-for: service
+  name: waypoint
+  namespace: svc-b-ns
+spec:
+  gatewayClassName: istio-waypoint
+  listeners:
+  - name: mesh
+    port: 15008
+    protocol: HBONE

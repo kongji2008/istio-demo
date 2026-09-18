@@ -1,0 +1,39 @@
+# Namespaces. istio-ingress is deliberately NOT ambient: the Istio-managed gateway speaks HBONE natively (ADR-0002).
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: istio-ingress
+  labels:
+    istio.io/dataplane-mode: none
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: portal-ns
+  labels:
+    istio.io/dataplane-mode: ambient
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: svc-a-ns
+  labels:
+    istio.io/dataplane-mode: ambient
+    # what `istioctl waypoint apply --enroll-namespace` would set; routes in-mesh traffic for this ns through Gateway "waypoint"
+    istio.io/use-waypoint: waypoint
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: svc-b-ns
+  labels:
+    istio.io/dataplane-mode: ambient
+    istio.io/use-waypoint: waypoint
+---
+# In-mesh client with the wrong Service Identity (verify.sh scenario 2a). No allow rule anywhere names its SA.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: rogue-ns
+  labels:
+    istio.io/dataplane-mode: ambient

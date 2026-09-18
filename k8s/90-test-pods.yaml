@@ -1,0 +1,35 @@
+# Long-running curl pods for verify.sh. Committed rather than `kubectl run` so the run is deterministic and repeatable.
+# Pods created after the namespace label are captured by ztunnel from their first packet.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: curl
+  namespace: rogue-ns  # in mesh, wrong Service Identity -> waypoint answers 403 (scenario 2a)
+spec:
+  containers:
+    - name: curl
+      image: curlimages/curl
+      command: ["sleep", "infinity"]
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: curl
+  namespace: default   # NOT in mesh: plaintext is closed by ztunnel at L4, no HTTP response (scenario 2b)
+spec:
+  containers:
+    - name: curl
+      image: curlimages/curl
+      command: ["sleep", "infinity"]
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: curl-as-svc-a
+  namespace: svc-a-ns  # right Service Identity for service-b; JWT scenarios 3-7
+spec:
+  serviceAccountName: svc-a-sa
+  containers:
+    - name: curl
+      image: curlimages/curl
+      command: ["sleep", "infinity"]

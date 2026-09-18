@@ -1,0 +1,55 @@
+# Deny-All Baseline: an empty-spec AuthorizationPolicy selects every captured workload in its namespace.
+# Enforced by ztunnel only; waypoints ignore policies without targetRefs, hence the two waypoint-scoped policies below.
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: deny-all
+  namespace: portal-ns
+spec: {}
+---
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: deny-all
+  namespace: svc-a-ns
+spec: {}
+---
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: deny-all
+  namespace: svc-b-ns
+spec: {}
+---
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: deny-all
+  namespace: rogue-ns
+spec: {}
+---
+# Waypoint-scoped allow-nothing: gives the waypoint a default-deny too, without a mesh-wide policy in istio-system.
+# ALLOW with no rules matches nothing; any Service enrolled later without its own allow is denied rather than allowed.
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: waypoint-allow-nothing
+  namespace: svc-a-ns
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: waypoint
+  action: ALLOW
+---
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: waypoint-allow-nothing
+  namespace: svc-b-ns
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: waypoint
+  action: ALLOW

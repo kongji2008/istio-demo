@@ -1,0 +1,9 @@
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+nodes:
+  - role: control-plane
+    extraPortMappings:
+      # NodePort 30080 of the ingress gateway Service -> http://localhost:8080 on the host for the browser demo
+      - containerPort: 30080
+        hostPort: 8080
+        protocol: TCP

@@ -1,0 +1,37 @@
+# STRICT mTLS per application namespace, enforced by ztunnel. Namespace scope is sufficient; mesh-wide is not required.
+# Plaintext from outside the mesh is closed at L4 with no HTTP response (verify.sh scenario 2b).
+apiVersion: security.istio.io/v1
+kind: PeerAuthentication
+metadata:
+  name: strict-mtls
+  namespace: portal-ns
+spec:
+  mtls:
+    mode: STRICT
+---
+apiVersion: security.istio.io/v1
+kind: PeerAuthentication
+metadata:
+  name: strict-mtls
+  namespace: svc-a-ns
+spec:
+  mtls:
+    mode: STRICT
+---
+apiVersion: security.istio.io/v1
+kind: PeerAuthentication
+metadata:
+  name: strict-mtls
+  namespace: svc-b-ns
+spec:
+  mtls:
+    mode: STRICT
+---
+apiVersion: security.istio.io/v1
+kind: PeerAuthentication
+metadata:
+  name: strict-mtls
+  namespace: rogue-ns
+spec:
+  mtls:
+    mode: STRICT
