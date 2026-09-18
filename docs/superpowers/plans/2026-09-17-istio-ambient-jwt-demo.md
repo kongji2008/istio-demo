@@ -54,7 +54,7 @@
 **Interfaces:**
 - Produces: Maven coordinates `demo:istio-demo:0.1.0` (pom) that Tasks 2–4 use as `<parent>` with `<relativePath>../pom.xml</relativePath>`.
 
-- [ ] **Step 1: git init and ignore file**
+- [x] **Step 1: git init and ignore file**
 
 ```bash
 cd /path/to/istio-demo && git init -b main
@@ -65,7 +65,7 @@ keys/
 EOF
 ```
 
-- [ ] **Step 2: Parent POM**
+- [x] **Step 2: Parent POM**
 
 `pom.xml`:
 ```xml
@@ -110,7 +110,7 @@ EOF
 </project>
 ```
 
-- [ ] **Step 3: Commit scaffold**
+- [x] **Step 3: Commit scaffold**
 
 ```bash
 git add .gitignore pom.xml BUILD-BRIEF.md CONTEXT.md docs .scratch .claude/settings.local.json
@@ -128,7 +128,7 @@ git commit -m "chore: scaffold repo, Maven parent, planning artifacts"
 - Produces: `GET /api/hello` (session-authenticated) -> `{"via":"portal","user":<sub>,"downstream":<service-a JSON>}`; `GET /healthz` -> `{"status":"ok"}`; `POST /login` form fields `username`, `password`. Properties `portal.jwt.private-key`, `portal.jwt.public-key` (Resource locations), `portal.downstream.service-a-url`.
 - Consumes: service-a `GET /hello` with `Authorization: Bearer`.
 
-- [ ] **Step 1: POM**
+- [x] **Step 1: POM**
 
 `portal/pom.xml`:
 ```xml
@@ -174,7 +174,7 @@ git commit -m "chore: scaffold repo, Maven parent, planning artifacts"
 </project>
 ```
 
-- [ ] **Step 2: Dockerfile**
+- [x] **Step 2: Dockerfile**
 
 `portal/Dockerfile` (identical in the other two modules):
 ```dockerfile
@@ -184,7 +184,7 @@ EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "/app.jar"]
 ```
 
-- [ ] **Step 3: application.yaml + local profile**
+- [x] **Step 3: application.yaml + local profile**
 
 `portal/src/main/resources/application.yaml`:
 ```yaml
@@ -211,7 +211,7 @@ portal:
     service-a-url: http://localhost:8081
 ```
 
-- [ ] **Step 4: Write the failing test**
+- [x] **Step 4: Write the failing test**
 
 `portal/src/test/java/demo/portal/TokenMinterTest.java`:
 ```java
@@ -256,12 +256,12 @@ class TokenMinterTest {
 }
 ```
 
-- [ ] **Step 5: Run test to verify it fails**
+- [x] **Step 5: Run test to verify it fails**
 
 Run: `export JAVA_HOME=$(/usr/libexec/java_home -v 21); mvn -q -pl portal test`
 Expected: compilation FAIL, `TokenMinter` not found.
 
-- [ ] **Step 6: Implement main, TokenMinter, SecurityConfig, HelloController**
+- [x] **Step 6: Implement main, TokenMinter, SecurityConfig, HelloController**
 
 `portal/src/main/java/demo/portal/PortalApplication.java`:
 ```java
@@ -439,7 +439,7 @@ class HelloController {
 }
 ```
 
-- [ ] **Step 7: Run test to verify it passes**
+- [x] **Step 7: Run test to verify it passes**
 
 Run: `mvn -q -pl portal test`
 Expected: `BUILD SUCCESS`, 1 test passed.
@@ -455,7 +455,7 @@ Expected: `BUILD SUCCESS`, 1 test passed.
 - Produces: `GET /hello` (Bearer, `ROLE_USER`) -> `{"via":"service-a","sub":..,"tenant_id":..,"downstream":<service-b JSON>}`; `GET /healthz`. Property `service-a.downstream.service-b-url`.
 - Consumes: service-b `GET /hello`.
 
-- [ ] **Step 1: POM**
+- [x] **Step 1: POM**
 
 `service-a/pom.xml`:
 ```xml
@@ -491,9 +491,9 @@ Expected: `BUILD SUCCESS`, 1 test passed.
 </project>
 ```
 
-- [ ] **Step 2: Dockerfile** — same four lines as Task 2 Step 2.
+- [x] **Step 2: Dockerfile** — same four lines as Task 2 Step 2.
 
-- [ ] **Step 3: application.yaml + local profile**
+- [x] **Step 3: application.yaml + local profile**
 
 `service-a/src/main/resources/application.yaml`:
 ```yaml
@@ -533,7 +533,7 @@ spring:
           public-key-location: file:../keys/portal.pub
 ```
 
-- [ ] **Step 4: Java**
+- [x] **Step 4: Java**
 
 `service-a/src/main/java/demo/servicea/ServiceAApplication.java`:
 ```java
@@ -635,7 +635,7 @@ class HelloController {
 }
 ```
 
-- [ ] **Step 5: Compile**
+- [x] **Step 5: Compile**
 
 Run: `mvn -q -pl service-a -DskipTests package`
 Expected: `BUILD SUCCESS`, `service-a/target/service-a-0.1.0.jar` exists.
@@ -650,11 +650,11 @@ Expected: `BUILD SUCCESS`, `service-a/target/service-a-0.1.0.jar` exists.
 **Interfaces:**
 - Produces: `GET /hello` -> `{"via":"service-b","greeting":"Hello, <sub>!","sub":..,"tenant_id":..,"roles":[..]}`; `GET /healthz`.
 
-- [ ] **Step 1: POM** — as Task 3 Step 1 with `<artifactId>service-b</artifactId>`, description "Terminal resource server: verifies the Internal JWT and returns a greeting", and **without** the `spring-boot-starter-restclient` dependency.
+- [x] **Step 1: POM** — as Task 3 Step 1 with `<artifactId>service-b</artifactId>`, description "Terminal resource server: verifies the Internal JWT and returns a greeting", and **without** the `spring-boot-starter-restclient` dependency.
 
-- [ ] **Step 2: Dockerfile** — same four lines as Task 2 Step 2.
+- [x] **Step 2: Dockerfile** — same four lines as Task 2 Step 2.
 
-- [ ] **Step 3: application.yaml** — as Task 3 Step 3 without the `service-a:` block. `application-local.yaml`:
+- [x] **Step 3: application.yaml** — as Task 3 Step 3 without the `service-a:` block. `application-local.yaml`:
 ```yaml
 server:
   port: 8082
@@ -666,7 +666,7 @@ spring:
           public-key-location: file:../keys/portal.pub
 ```
 
-- [ ] **Step 4: Java**
+- [x] **Step 4: Java**
 
 `ServiceBApplication.java`: as Task 3 with package `demo.serviceb`, class `ServiceBApplication`.
 
@@ -712,7 +712,7 @@ class HelloController {
 }
 ```
 
-- [ ] **Step 5: Full build — CHECKPOINT 1**
+- [x] **Step 5: Full build — CHECKPOINT 1**
 
 Run:
 ```bash
@@ -722,7 +722,7 @@ ls portal/target/*.jar service-a/target/*.jar service-b/target/*.jar
 ```
 Expected: `BUILD SUCCESS`; total main-source line count < 500; three fat jars.
 
-- [ ] **Step 6: Commit checkpoint 1**
+- [x] **Step 6: Commit checkpoint 1**
 
 ```bash
 git add pom.xml portal service-a service-b
@@ -739,7 +739,7 @@ git commit -m "feat: portal, service-a, service-b on Spring Boot 4.1.1 (checkpoi
 **Interfaces:**
 - Produces: `scripts/mint-jwt.sh <private.pem> [ttl] [kid] [sub] [tenant]` prints a compact JWS. `k8s/60-secrets.yaml` defines Secret `portal-signing-key` (portal-ns; keys `private.pem`, `public.pem`) and ConfigMaps `portal-public-key` (svc-a-ns, svc-b-ns; key `public.pem`), which Tasks 6 mounts. `k8s/32-request-authentication.yaml` defines `RequestAuthentication` `portal-jwt` in svc-a-ns and svc-b-ns.
 
-- [ ] **Step 1: gen-keys.sh**
+- [x] **Step 1: gen-keys.sh**
 
 `scripts/gen-keys.sh`:
 ```bash
@@ -840,7 +840,7 @@ EOF
 echo "wrote keys/, k8s/60-secrets.yaml, k8s/32-request-authentication.yaml (kid=$KID)"
 ```
 
-- [ ] **Step 2: mint-jwt.sh**
+- [x] **Step 2: mint-jwt.sh**
 
 `scripts/mint-jwt.sh`:
 ```bash
@@ -864,7 +864,7 @@ SIG=$(printf '%s.%s' "$HEADER" "$PAYLOAD" | openssl dgst -sha256 -sign "$KEY" -b
 printf '%s.%s.%s\n' "$HEADER" "$PAYLOAD" "$SIG"
 ```
 
-- [ ] **Step 3: Run and verify offline**
+- [x] **Step 3: Run and verify offline**
 
 ```bash
 chmod +x scripts/*.sh && scripts/gen-keys.sh
@@ -885,7 +885,7 @@ Expected: `BEGIN PRIVATE KEY` / `BEGIN PUBLIC KEY`; JWKS with `kid: portal-key-1
 - Consumes: Secret/ConfigMaps from Task 5; images from Task 7.
 - Produces: SA names `portal-sa`, `svc-a-sa`, `svc-b-sa`, `waypoint`, `demo-gateway-istio`; Services `portal`, `service-a`, `service-b` on 8080; test pods `curl` (rogue-ns), `curl` (default), `curl-as-svc-a` (svc-a-ns).
 
-- [ ] **Step 1: 00-namespaces.yaml**
+- [x] **Step 1: 00-namespaces.yaml**
 
 ```yaml
 # Namespaces. istio-ingress is deliberately NOT ambient: the Istio-managed gateway speaks HBONE natively (ADR-0002).
@@ -929,7 +929,7 @@ metadata:
     istio.io/dataplane-mode: ambient
 ```
 
-- [ ] **Step 2: 10-portal.yaml**
+- [x] **Step 2: 10-portal.yaml**
 
 ```yaml
 apiVersion: v1
@@ -991,7 +991,7 @@ spec:
       appProtocol: http
 ```
 
-- [ ] **Step 3: 11-service-a.yaml and 12-service-b.yaml**
+- [x] **Step 3: 11-service-a.yaml and 12-service-b.yaml**
 
 Same shape as Step 2 with: SA `svc-a-sa` / `svc-b-sa`; Deployment+Service `service-a` / `service-b` in `svc-a-ns` / `svc-b-ns`; image `istio-demo/service-a:dev` / `istio-demo/service-b:dev`; volume:
 ```yaml
@@ -1006,7 +1006,7 @@ Same shape as Step 2 with: SA `svc-a-sa` / `svc-b-sa`; Deployment+Service `servi
 ```
 Service ports block identical (`appProtocol: http` helps the waypoint treat it as HTTP).
 
-- [ ] **Step 4: 20-peer-authentication.yaml**
+- [x] **Step 4: 20-peer-authentication.yaml**
 
 ```yaml
 # STRICT mTLS per application namespace, enforced by ztunnel. Namespace scope is sufficient; mesh-wide is not required.
@@ -1048,7 +1048,7 @@ spec:
     mode: STRICT
 ```
 
-- [ ] **Step 5: 30-deny-all.yaml**
+- [x] **Step 5: 30-deny-all.yaml**
 
 ```yaml
 # Deny-All Baseline: an empty-spec AuthorizationPolicy selects every captured workload in its namespace.
@@ -1108,7 +1108,7 @@ spec:
   action: ALLOW
 ```
 
-- [ ] **Step 6: 31-authorization-policies.yaml**
+- [x] **Step 6: 31-authorization-policies.yaml**
 
 ```yaml
 # Per-hop allows. Ground truth is the per-hop identity table in BUILD-BRIEF.md §2 / research 03.
@@ -1201,7 +1201,7 @@ spec:
             paths: ["/hello"]
 ```
 
-- [ ] **Step 7: 40-waypoints.yaml** (verbatim `istioctl waypoint generate --for service` output; the SA is named after the Gateway, so `waypoint` is what the L4 policies depend on)
+- [x] **Step 7: 40-waypoints.yaml** (verbatim `istioctl waypoint generate --for service` output; the SA is named after the Gateway, so `waypoint` is what the L4 policies depend on)
 
 ```yaml
 apiVersion: gateway.networking.k8s.io/v1
@@ -1233,7 +1233,7 @@ spec:
     protocol: HBONE
 ```
 
-- [ ] **Step 8: 50-gateway.yaml**
+- [x] **Step 8: 50-gateway.yaml**
 
 ```yaml
 # Ingress Gateway in its own non-ambient namespace (ADR-0002). Istio creates Deployment/Service/SA "demo-gateway-istio".
@@ -1285,7 +1285,7 @@ spec:
 ```
 (If Istio refuses to merge onto the pre-created Service, delete that Service block and rely on port-forward; verify.sh port-forwards regardless.)
 
-- [ ] **Step 9: 90-test-pods.yaml**
+- [x] **Step 9: 90-test-pods.yaml**
 
 ```yaml
 # Long-running curl pods for verify.sh. Committed rather than `kubectl run` so the run is deterministic and repeatable.
@@ -1325,7 +1325,7 @@ spec:
       command: ["sleep", "infinity"]
 ```
 
-- [ ] **Step 10: Static validation**
+- [x] **Step 10: Static validation**
 
 Run: `for f in k8s/*.yaml; do python3 -c "import sys,yaml; list(yaml.safe_load_all(open('$f')))" && echo "ok $f"; done` (or `kubectl --context kind-istio-demo apply --dry-run=client` after Task 8).
 Expected: every file parses.
@@ -1340,7 +1340,7 @@ Expected: every file parses.
 **Interfaces:**
 - Produces: kind cluster `istio-demo` (context `kind-istio-demo`) with Istio 1.31.0 ambient + Gateway API v1.6.0; images loaded; all manifests applied and Ready.
 
-- [ ] **Step 1: kind-config.yaml**
+- [x] **Step 1: kind-config.yaml**
 
 ```yaml
 kind: Cluster
@@ -1354,7 +1354,7 @@ nodes:
         protocol: TCP
 ```
 
-- [ ] **Step 2: setup-cluster.sh**
+- [x] **Step 2: setup-cluster.sh**
 
 ```bash
 #!/usr/bin/env bash
@@ -1392,7 +1392,7 @@ kubectl get pods -n istio-system
 echo "cluster ${KIND_CLUSTER} ready (context kind-${KIND_CLUSTER})"
 ```
 
-- [ ] **Step 3: build-and-load.sh**
+- [x] **Step 3: build-and-load.sh**
 
 ```bash
 #!/usr/bin/env bash
@@ -1417,7 +1417,7 @@ kind load docker-image --name "$KIND_CLUSTER" istio-demo/portal:dev istio-demo/s
 echo "images built and loaded into kind-${KIND_CLUSTER}"
 ```
 
-- [ ] **Step 4: deploy.sh**
+- [x] **Step 4: deploy.sh**
 
 ```bash
 #!/usr/bin/env bash
@@ -1456,7 +1456,7 @@ kubectl get authorizationpolicies -A
 echo "deployed; browser: http://localhost:8080/  (or: kubectl $KCTX -n istio-ingress port-forward svc/demo-gateway-istio 18080:80)"
 ```
 
-- [ ] **Step 5: Shell syntax check**
+- [x] **Step 5: Shell syntax check**
 
 Run: `chmod +x scripts/*.sh && for s in scripts/*.sh; do bash -n "$s" && echo "ok $s"; done`
 Expected: all ok.
@@ -1465,12 +1465,12 @@ Expected: all ok.
 
 ### Task 8: CHECKPOINT 2 — create the cluster
 
-- [ ] **Step 1: Run setup**
+- [x] **Step 1: Run setup**
 
 Run: `scripts/setup-cluster.sh` (timeout 10 min).
 Expected: kind cluster created from the 1.35.8 image; Gateway API CRDs applied; `istioctl install` prints installation complete; istiod, ztunnel, istio-cni-node rolled out.
 
-- [ ] **Step 2: Sanity**
+- [x] **Step 2: Sanity**
 
 ```bash
 kubectl --context kind-istio-demo version | grep Server
@@ -1479,7 +1479,7 @@ kubectl config current-context   # must still be the developer's original contex
 ```
 Expected: Server v1.35.8; `istio` and `istio-waypoint` GatewayClasses accepted; current-context unchanged.
 
-- [ ] **Step 3: Commit checkpoint 2**
+- [x] **Step 3: Commit checkpoint 2**
 
 ```bash
 git add scripts k8s
@@ -1490,17 +1490,17 @@ git commit -m "feat: k8s manifests, key/cluster/deploy scripts (checkpoint 2: cl
 
 ### Task 9: CHECKPOINT 3 — build, load, deploy
 
-- [ ] **Step 1: Build and load**
+- [x] **Step 1: Build and load**
 
 Run: `scripts/build-and-load.sh`
 Expected: three `istio-demo/*:dev` images loaded; `docker exec istio-demo-control-plane crictl images | grep istio-demo` lists three.
 
-- [ ] **Step 2: Deploy**
+- [x] **Step 2: Deploy**
 
 Run: `scripts/deploy.sh` (timeout 10 min).
 Expected: all `wait`/`rollout status` succeed; `get authorizationpolicies -A` lists 4 deny-all, 2 waypoint-allow-nothing, 5 allow-*.
 
-- [ ] **Step 3: Diagnose if a pod is not Ready**
+- [x] **Step 3: Diagnose if a pod is not Ready**
 
 ```bash
 kubectl --context kind-istio-demo -n portal-ns logs deploy/portal --tail=50
@@ -1509,12 +1509,12 @@ kubectl --context kind-istio-demo -n istio-system logs ds/ztunnel --tail=50
 ```
 Check first: ambient labels present (`kubectl get ns --show-labels`), pod annotation `ambient.istio.io/redirection: enabled`, waypoint Gateway `Programmed=True`.
 
-- [ ] **Step 4: Check NodePort mapping**
+- [x] **Step 4: Check NodePort mapping**
 
 Run: `kubectl --context kind-istio-demo -n istio-ingress get svc demo-gateway-istio -o jsonpath='{.spec.type} {.spec.ports[*].nodePort}'; curl -s -o /dev/null -w '%{http_code}\n' http://localhost:8080/login`
 Expected: `NodePort 30080` and HTTP 200. If the nodePort is not 30080, remove the pre-created Service from `50-gateway.yaml`, re-apply, and document port-forward as the only path.
 
-- [ ] **Step 5: Commit checkpoint 3**
+- [x] **Step 5: Commit checkpoint 3**
 
 ```bash
 git add -A k8s scripts
@@ -1528,7 +1528,7 @@ git commit -m "feat: deploy to kind (checkpoint 3: all pods Ready)"
 **Files:**
 - Create: `scripts/verify.sh`
 
-- [ ] **Step 1: Write verify.sh**
+- [x] **Step 1: Write verify.sh**
 
 ```bash
 #!/usr/bin/env bash
@@ -1632,19 +1632,19 @@ echo "verify: $PASS passed, $FAIL failed"
 [ "$FAIL" = 0 ]
 ```
 
-- [ ] **Step 2: Run**
+- [x] **Step 2: Run**
 
 Run: `chmod +x scripts/verify.sh && scripts/verify.sh`
 Expected: 10 PASS lines, `verify: 10 passed, 0 failed`, exit 0.
 
-- [ ] **Step 3: Diagnose failures (brief §9: policies first, Java last)**
+- [x] **Step 3: Diagnose failures (brief §9: policies first, Java last)**
 
 - 2a/3/4 not 403: check `allow-waypoint-to-a/b` exist with the exact waypoint principal, and that `allow-portal-to-a`/`allow-a-to-b` have `targetRefs`. `kubectl --context kind-istio-demo -n istio-system logs ds/ztunnel | grep -i 'policy rejection'`.
 - 1a 5xx: `kubectl --context kind-istio-demo -n portal-ns logs deploy/portal`; check `forwardOriginalToken: true` (app 401 on happy path) and kid match (`Jwks doesn't have key`).
 - 7 fails but 3-6 pass: check service-b logs for `public-key-location` parse errors or `aud` mismatch.
 - `istioctl --context kind-istio-demo ztunnel-config workload -n svc-a-ns` should show `HBONE` and waypoint for service-a.
 
-- [ ] **Step 4: Commit checkpoint 4**
+- [x] **Step 4: Commit checkpoint 4**
 
 ```bash
 git add scripts/verify.sh
@@ -1658,7 +1658,7 @@ git commit -m "feat: verify.sh, 10/10 scenarios PASS (checkpoint 4)"
 **Files:**
 - Create: `README.md`
 
-- [ ] **Step 1: Write README.md** covering brief §8 items 1–7 in this order, with the final facts from the cluster (nodePort outcome, observed curl exit code for 2b):
+- [x] **Step 1: Write README.md** covering brief §8 items 1–7 in this order, with the final facts from the cluster (nodePort outcome, observed curl exit code for 2b):
 
 1. Title + one-paragraph purpose (from CONTEXT.md). Quick start block:
    ```bash
@@ -1675,7 +1675,7 @@ git commit -m "feat: verify.sh, 10/10 scenarios PASS (checkpoint 4)"
 9. Local run without Istio: `mvn spring-boot:run -Dspring-boot.run.profiles=local` per module (ports 8080/8081/8082), `curl -H "Authorization: Bearer $(scripts/mint-jwt.sh keys/portal.key 300)" localhost:8082/hello`, and login via browser at http://localhost:8080/api/hello.
 10. Repository layout (brief §3) and the "demo only" caveats (committed private key, CSRF off, plaintext passwords).
 
-- [ ] **Step 2: Commit**
+- [x] **Step 2: Commit**
 
 ```bash
 git add README.md docs/superpowers
