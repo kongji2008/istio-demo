@@ -19,6 +19,11 @@ wait_deploy() {
   kubectl -n "$ns" rollout status "deploy/$name" --timeout=300s
 }
 wait_deploy istio-ingress demo-gateway-istio
+# Istio assigns a random NodePort; pin the http port to 30080 so the kind extraPortMapping (host :8080) reaches it.
+# Istio's server-side apply does not own nodePort, so the patch survives reconciles. A pre-created same-name Service does NOT work (no selector is merged).
+HTTP_IDX=$(kubectl -n istio-ingress get svc demo-gateway-istio -o json | jq '.spec.ports | map(.name) | index("http")')
+kubectl -n istio-ingress patch svc demo-gateway-istio --type json \
+  -p "[{\"op\":\"replace\",\"path\":\"/spec/ports/${HTTP_IDX}/nodePort\",\"value\":30080}]" >/dev/null
 wait_deploy svc-a-ns waypoint
 wait_deploy svc-b-ns waypoint
 wait_deploy portal-ns portal

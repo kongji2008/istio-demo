@@ -5,7 +5,8 @@ metadata:
   name: demo-gateway
   namespace: istio-ingress
   annotations:
-    # kind has no LoadBalancer; NodePort + the kind extraPortMapping (30080 -> host 8080) serves the browser demo
+    # kind has no LoadBalancer; NodePort + the kind extraPortMapping (30080 -> host 8080) serves the browser demo.
+    # Istio picks a random nodePort; deploy.sh patches the http port to 30080 after the Service appears.
     networking.istio.io/service-type: NodePort
 spec:
   gatewayClassName: istio
@@ -16,20 +17,6 @@ spec:
       allowedRoutes:
         namespaces:
           from: All
----
-# Same-name Service pre-created so Istio's server-side apply merges onto it and the nodePort stays pinned to 30080.
-apiVersion: v1
-kind: Service
-metadata:
-  name: demo-gateway-istio
-  namespace: istio-ingress
-spec:
-  type: NodePort
-  ports:
-    - name: http
-      port: 80
-      protocol: TCP
-      nodePort: 30080
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute

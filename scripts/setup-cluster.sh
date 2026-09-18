@@ -16,6 +16,8 @@ GATEWAY_API_VERSION=v1.6.0
 istioctl version --remote=false | grep -q "$ISTIO_VERSION" \
   || { echo "FATAL: need istioctl ${ISTIO_VERSION} (curl -L https://istio.io/downloadIstio | ISTIO_VERSION=${ISTIO_VERSION} sh -)" >&2; exit 1; }
 
+# kind switches the current kubeconfig context to the new cluster; remember the developer's context and put it back at the end.
+PREV_CTX=$(command kubectl config current-context 2>/dev/null || true)
 kind create cluster --name "$KIND_CLUSTER" --image "$KIND_NODE_IMAGE" --config scripts/kind-config.yaml
 kubectl() { command kubectl $KCTX "$@"; }   # every later kubectl call in this script is pinned
 
@@ -30,4 +32,5 @@ kubectl -n istio-system rollout status deploy/istiod --timeout=300s
 kubectl -n istio-system rollout status ds/ztunnel --timeout=300s
 kubectl -n istio-system rollout status ds/istio-cni-node --timeout=300s
 kubectl get pods -n istio-system
+[ -n "$PREV_CTX" ] && command kubectl config use-context "$PREV_CTX" >/dev/null && echo "restored current context to ${PREV_CTX}"
 echo "cluster ${KIND_CLUSTER} ready (context kind-${KIND_CLUSTER})"
